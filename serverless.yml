@@ -1,0 +1,13 @@
+service: valence-aws-python-takehome
+
+provider:
+  name: aws
+  runtime: python3.6 # or python3.6, supported as of April 2017
+
+functions:
+  myFunction:
+    handler: handler.endpoint
+    events:
+      - http:
+          path: ping
+          method: get
