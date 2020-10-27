@@ -2,21 +2,39 @@ import json
 import datetime
 import requests
 import csv
-
+import asyncio
+import aiohttp
 
 def endpoint(event, context):
-  # csvfile = open('locations.csv')
-  # location_reader = csv.reader(csvfile, delimiter=',')
-  # dict_reader = csv.DictReader(csvfile)
-  # locations = []
-  # for row in dict_reader:
-  #   locations.(row['Location'])
-  # print('Locations:', locations)
-  # for row in location_reader:
-  #   print('row', row[0])
-  # print('read', read)
-  # print('event', event)
-  # print('context', context)
+  csvfile = open('locations.csv')
+  dict_reader = csv.DictReader(csvfile)
+
+  locations = []
+  for row in dict_reader:
+    locations.append(row['Location'])
+
+  queries = []
+  for location in locations:
+    query = location.replace(' ', '%20')
+    queries.append(query)
+
+  async def fetch(session, url):
+    async with session.get(url) as response:
+      json_response = await response.json()
+      return json_response
+
+
+  URL = 'https://www.metaweather.com/api/location/search/?query=Los%20Angeles'
+  
+  async def gather():
+    async with aiohttp.ClientSession() as session:
+      data = fetch(session, URL)
+      tasks = [fetch(session,URL) for _ in range(5)]
+      tests = await asyncio.gather(*tasks)
+      print('tests', tests)
+
+  asyncio.run(gather())
+
   location = 'Los%Angeles'
   request = requests.get('https://www.metaweather.com/api/location/search/?query=Los%20Angeles').text
   data = json.loads(request)
@@ -34,24 +52,19 @@ def endpoint(event, context):
       self.date = date
       self.temp = temp
       self.description = description
-  
-  test_forecast = Forecast('10-26-2020', 20.57, 'Heavy Cloud')
-  print('testing', test_forecast.date)
-
 
   for row in consolidated_weather:
-    day = {}
-    for value in weather_dict:
-      day[value] = row[value]
-    results[location].append(day)
+    date = row['applicable_date']
+    temp = row['the_temp']
+    description = row['weather_state_name']
+    forecast = Forecast(date, temp, description)
+    # print('forecast', forecast)  
+    results[location].append(forecast)
     # print("Date:", row["applicable_date"], "Description:", row["weather_state_name"], "Temp:", row["the_temp"])
   print(results)
 
   # print(weather_data)
   
-
-
-
 
 
   current_time = datetime.datetime.now().time()
