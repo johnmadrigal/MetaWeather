@@ -1,8 +1,15 @@
+org: jmadrigal
+app: valence
 service: valence-aws-python-takehome
 
 provider:
   name: aws
   runtime: python3.6 # or python3.6, supported as of April 2017
+  region: us-west-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action: "s3:*"
+      Resource: "arn:aws:s3:::accesspoint/*"
 
 functions:
   myFunction:

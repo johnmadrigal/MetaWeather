@@ -118,6 +118,13 @@
                       "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/valence-aws-python-takehome-dev*:*:*"
                     }
                   ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:*"
+                  ],
+                  "Resource": "arn:aws:s3:::accesspoint/*"
                 }
               ]
             }
@@ -139,6 +146,52 @@
         }
       }
     },
+    "EnterpriseLogAccessIamRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::802587217904:root"
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": "ServerlessEnterprise-DjD80fJ7cn88M6D1Db"
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "LogFilterAccess",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:FilterLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::GetAtt": [
+                        "MyFunctionLogGroup",
+                        "Arn"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "MyFunctionLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -146,10 +199,10 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/valence-aws-python-takehome/dev/1603732240079-2020-10-26T17:10:40.079Z/valence-aws-python-takehome.zip"
+          "S3Key": "serverless/valence-aws-python-takehome/dev/1603813256148-2020-10-27T15:40:56.148Z/valence-aws-python-takehome.zip"
         },
         "FunctionName": "valence-aws-python-takehome-dev-myFunction",
-        "Handler": "handler.endpoint",
+        "Handler": "s_myFunction.handler",
         "MemorySize": 1024,
         "Role": {
           "Fn::GetAtt": [
@@ -164,14 +217,14 @@
         "MyFunctionLogGroup"
       ]
     },
-    "MyFunctionLambdaVersionvB8alXLOEAgcwwHhRHgSRnRtXbigJytMiudknP0Cgpo": {
+    "MyFunctionLambdaVersionlN7YVfUIvbxeMdkbzq0vcKjGJKmECV9NfhFnMz0nZs": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "MyFunctionLambdaFunction"
         },
-        "CodeSha256": "0hEbTU4rqALO9L9Nt2RmND02+Jry8bKVUk9ZYN8hJQk="
+        "CodeSha256": "iQATp4TPORENMWJXeFSWPw4qZVluWIoy07mwKrD4SZg="
       }
     },
     "ApiGatewayRestApi": {
@@ -244,7 +297,7 @@
         "MethodResponses": []
       }
     },
-    "ApiGatewayDeployment1603732237668": {
+    "ApiGatewayDeployment1603813249595": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -292,6 +345,153 @@
           ]
         }
       }
+    },
+    "ApiGatewayLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/api-gateway/valence-aws-python-takehome-dev"
+      }
+    },
+    "CustomApiGatewayAccountCloudWatchRole": {
+      "Type": "Custom::ApiGatewayAccountRole",
+      "Version": 1,
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "CustomDashresourceDashapigwDashcwDashroleLambdaFunction",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "IamRoleCustomResourcesLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "dev",
+                  "valence-aws-python-takehome",
+                  "custom-resources-lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      ":",
+                      [
+                        "arn",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        "iam:",
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        "role/*"
+                      ]
+                    ]
+                  },
+                  "Action": [
+                    "iam:AttachRolePolicy",
+                    "iam:CreateRole",
+                    "iam:ListAttachedRolePolicies",
+                    "iam:PassRole"
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Join": [
+                      ":",
+                      [
+                        "arn",
+                        {
+                          "Ref": "AWS::Partition"
+                        },
+                        "apigateway:*::/account"
+                      ]
+                    ]
+                  },
+                  "Action": [
+                    "apigateway:GET",
+                    "apigateway:PATCH"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "CustomDashresourceDashapigwDashcwDashroleLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/valence-aws-python-takehome/dev/1603813256148-2020-10-27T15:40:56.148Z/custom-resources.zip"
+        },
+        "FunctionName": "valence-aws-python-takehome-dev-custom-resource-apigw-cw-role",
+        "Handler": "apiGatewayCloudWatchRole/handler.handler",
+        "MemorySize": 1024,
+        "Runtime": "nodejs12.x",
+        "Timeout": 180,
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleCustomResourcesLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "IamRoleCustomResourcesLambdaExecution"
+      ]
+    },
+    "CloudWatchLogsSubscriptionFilterMyFunctionLogGroup": {
+      "Type": "AWS::Logs::SubscriptionFilter",
+      "Properties": {
+        "DestinationArn": "arn:aws:logs:us-west-1:802587217904:destination:DjD80fJ7cn88M6D1Db#49nG2T64xLrSS76mY4#valence-aws-python-takehome#dev",
+        "FilterPattern": "?\"REPORT RequestId: \" ?\"SERVERLESS_ENTERPRISE\"",
+        "LogGroupName": {
+          "Ref": "MyFunctionLogGroup"
+        }
+      }
+    },
+    "CloudWatchLogsSubscriptionFilterApiGatewayLogGroup": {
+      "Type": "AWS::Logs::SubscriptionFilter",
+      "Properties": {
+        "DestinationArn": "arn:aws:logs:us-west-1:802587217904:destination:DjD80fJ7cn88M6D1Db#49nG2T64xLrSS76mY4#valence-aws-python-takehome#dev",
+        "FilterPattern": "\"SLS_ACCESS_LOG\"",
+        "LogGroupName": {
+          "Ref": "ApiGatewayLogGroup"
+        }
+      }
     }
   },
   "Outputs": {
@@ -300,10 +500,18 @@
         "Ref": "ServerlessDeploymentBucket"
       }
     },
+    "EnterpriseLogAccessIamRole": {
+      "Value": {
+        "Fn::GetAtt": [
+          "EnterpriseLogAccessIamRole",
+          "Arn"
+        ]
+      }
+    },
     "MyFunctionLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "MyFunctionLambdaVersionvB8alXLOEAgcwwHhRHgSRnRtXbigJytMiudknP0Cgpo"
+        "Ref": "MyFunctionLambdaVersionlN7YVfUIvbxeMdkbzq0vcKjGJKmECV9NfhFnMz0nZs"
       }
     },
     "ServiceEndpoint": {
