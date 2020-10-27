@@ -1,13 +1,14 @@
 import json
 import csv
-import asyncio
-import aiohttp
 import boto3
 import codecs
+import os
+import asyncio
+import aiohttp
 
+os.environ["SLS_DEBUG"] = "*"
 
 def endpoint(event, context):
-
     # connect to s3
     s3 = boto3.resource('s3')
     bucket = s3.Bucket('primelocations')
@@ -21,7 +22,6 @@ def endpoint(event, context):
     for row in dict_reader:
         locations.append(row['Location'])
 
-    print('locations', locations)
     # develop appropriate query string locations
     queries = []
     for location in locations:
@@ -34,7 +34,7 @@ def endpoint(event, context):
             json_response = await response.json()
             return json_response
 
-    async def gather():
+    async def gather(future):
         async with aiohttp.ClientSession() as session:
 
             # get location data from api
@@ -66,12 +66,20 @@ def endpoint(event, context):
                     description = day['weather_state_name']
                     forecast = Forecast(date, temp, description)
                     results[location].append(forecast)
+        # future.set_result(results)
         return results
 
-    body = asyncio.run(gather())
+
+    asyncio.set_event_loop(asyncio.new_event_loop())
+    loop = asyncio.get_event_loop()
+    future = asyncio.Future()
+    task = asyncio.ensure_future(gather(future))
+    body = loop.run_until_complete(task)
+    loop.close()
+
 
     response = {
         "statusCode": 200,
-        "body": body
+        "body": json.dumps(body)
     }
     return response

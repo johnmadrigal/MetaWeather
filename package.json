@@ -3,5 +3,9 @@
   "version": "1.0.0",
   "description": "My description goes here.",
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-python-requirements": "^5.1.0"
+  }
 }

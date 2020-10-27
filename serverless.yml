@@ -9,8 +9,10 @@ provider:
   iamRoleStatements:
     - Effect: "Allow"
       Action: "s3:*"
-      Resource: "arn:aws:s3:::accesspoint/*"
-
+      Resource: [
+          "arn:aws:s3:::primelocations/*",
+          "arn:aws:s3:::primelocations/"
+      ]
 functions:
   myFunction:
     handler: handler.endpoint
@@ -18,3 +20,10 @@ functions:
       - http:
           path: ping
           method: get
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: 'non-linux'
