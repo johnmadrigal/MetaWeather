@@ -1,4 +1,3 @@
-org: jmadrigal
 app: valence
 service: valence-aws-python-takehome
 

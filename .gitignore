@@ -1,5 +1,7 @@
-node_modules
-.serverless/
+
+.serverless
 venv
 .DS_Store
-*.pyc
+__pycache__/
+*.py[cod]
+node_modules
