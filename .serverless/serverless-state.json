@@ -16,7 +16,10 @@
           "Action": [
             "s3:*"
           ],
-          "Resource": "arn:aws:s3:::accesspoint/*"
+          "Resource": [
+            "arn:aws:s3:::primelocations/*",
+            "arn:aws:s3:::primelocations/"
+          ]
         }
       ],
       "versionFunctions": true,
@@ -217,7 +220,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/valence-aws-python-takehome/dev/1603813256148-2020-10-27T15:40:56.148Z/valence-aws-python-takehome.zip"
+                "S3Key": "serverless/valence-aws-python-takehome/dev/1603843757652-2020-10-28T00:09:17.652Z/valence-aws-python-takehome.zip"
               },
               "FunctionName": "valence-aws-python-takehome-dev-myFunction",
               "Handler": "s_myFunction.handler",
@@ -235,14 +238,14 @@
               "MyFunctionLogGroup"
             ]
           },
-          "MyFunctionLambdaVersionlN7YVfUIvbxeMdkbzq0vcKjGJKmECV9NfhFnMz0nZs": {
+          "MyFunctionLambdaVersionxoQ1KHVtkVITnxPrRqNlnhcvza7FkU5RB1rtiAMV8": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "MyFunctionLambdaFunction"
               },
-              "CodeSha256": "iQATp4TPORENMWJXeFSWPw4qZVluWIoy07mwKrD4SZg="
+              "CodeSha256": "J1eFgvY5v62HSNAm2KwvabirXQwe7nhkC1/MUdbp+0M="
             }
           },
           "ApiGatewayRestApi": {
@@ -315,7 +318,7 @@
               "MethodResponses": []
             }
           },
-          "ApiGatewayDeployment1603813249595": {
+          "ApiGatewayDeployment1603843737557": {
             "Type": "AWS::ApiGateway::Deployment",
             "Properties": {
               "RestApiId": {
@@ -473,7 +476,7 @@
                 "S3Bucket": {
                   "Ref": "ServerlessDeploymentBucket"
                 },
-                "S3Key": "serverless/valence-aws-python-takehome/dev/1603813256148-2020-10-27T15:40:56.148Z/custom-resources.zip"
+                "S3Key": "serverless/valence-aws-python-takehome/dev/1603843757652-2020-10-28T00:09:17.652Z/custom-resources.zip"
               },
               "FunctionName": "valence-aws-python-takehome-dev-custom-resource-apigw-cw-role",
               "Handler": "apiGatewayCloudWatchRole/handler.handler",
@@ -529,7 +532,7 @@
           "MyFunctionLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "MyFunctionLambdaVersionlN7YVfUIvbxeMdkbzq0vcKjGJKmECV9NfhFnMz0nZs"
+              "Ref": "MyFunctionLambdaVersionxoQ1KHVtkVITnxPrRqNlnhcvza7FkU5RB1rtiAMV8"
             }
           },
           "ServiceEndpoint": {
@@ -631,6 +634,14 @@
       },
       "vpc": {}
     },
+    "custom": {
+      "pythonRequirements": {
+        "dockerizePip": "non-linux"
+      }
+    },
+    "plugins": [
+      "serverless-python-requirements"
+    ],
     "pluginsData": {},
     "functions": {
       "myFunction": {
@@ -650,7 +661,7 @@
         "timeout": 6,
         "runtime": "python3.6",
         "vpc": {},
-        "versionLogicalId": "MyFunctionLambdaVersionlN7YVfUIvbxeMdkbzq0vcKjGJKmECV9NfhFnMz0nZs"
+        "versionLogicalId": "MyFunctionLambdaVersionxoQ1KHVtkVITnxPrRqNlnhcvza7FkU5RB1rtiAMV8"
       }
     },
     "configValidationMode": "warn",
@@ -670,12 +681,21 @@
           {
             "Effect": "Allow",
             "Action": "s3:*",
-            "Resource": "arn:aws:s3:::accesspoint/*"
+            "Resource": [
+              "arn:aws:s3:::primelocations/*",
+              "arn:aws:s3:::primelocations/"
+            ]
           }
         ]
       },
       "functions": {
         "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
       }
     },
     "isDashboardMonitoringPreconfigured": true,
@@ -685,7 +705,7 @@
     "artifact": "/Users/johnmadrigal/Desktop/serverless_template_py/.serverless/valence-aws-python-takehome.zip"
   },
   "package": {
-    "artifactDirectoryName": "serverless/valence-aws-python-takehome/dev/1603813256148-2020-10-27T15:40:56.148Z",
+    "artifactDirectoryName": "serverless/valence-aws-python-takehome/dev/1603843757652-2020-10-28T00:09:17.652Z",
     "artifact": "valence-aws-python-takehome.zip"
   }
 }

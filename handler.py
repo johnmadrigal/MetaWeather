@@ -2,11 +2,11 @@ import json
 import csv
 import boto3
 import codecs
-import os
 import asyncio
 import aiohttp
+from utils import fetch, get_csv_column
+from weather import Forecast
 
-os.environ["SLS_DEBUG"] = "*"
 
 def endpoint(event, context):
     # connect to s3
@@ -15,12 +15,8 @@ def endpoint(event, context):
     stream = bucket.Object('locations.csv').get()["Body"]
     csv_file = codecs.getreader("utf-8")(stream)
 
-    dict_reader = csv.DictReader(csv_file)
-
-    # create locations list from csv
-    locations = []
-    for row in dict_reader:
-        locations.append(row['Location'])
+    # get locations from csv
+    locations = get_csv_column(csv_file, 'Location')
 
     # develop appropriate query string locations
     queries = []
@@ -28,11 +24,6 @@ def endpoint(event, context):
         query_string = location.replace(' ', '%20')
         query_location = f'https://www.metaweather.com/api/location/search/?query={query_string}'
         queries.append(query_location)
-
-    async def fetch(session, url):
-        async with session.get(url) as response:
-            json_response = await response.json()
-            return json_response
 
     async def gather(future):
         async with aiohttp.ClientSession() as session:
@@ -51,9 +42,7 @@ def endpoint(event, context):
                 weathers.append(fetch(session, query_weather))
             weather_data = await asyncio.gather(*weathers)
 
-            class Forecast(dict):
-                def __init__(self, date, temp, description):
-                    dict.__init__(self, date=date, temp=temp, description=description)
+
 
             # create json object from weather data
             results = {}
@@ -66,9 +55,7 @@ def endpoint(event, context):
                     description = day['weather_state_name']
                     forecast = Forecast(date, temp, description)
                     results[location].append(forecast)
-        # future.set_result(results)
         return results
-
 
     asyncio.set_event_loop(asyncio.new_event_loop())
     loop = asyncio.get_event_loop()
