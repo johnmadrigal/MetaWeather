@@ -1,19 +1,15 @@
 import json
 import csv
 import boto3
-import codecs
 import asyncio
 import aiohttp
-from utils import fetch, get_csv_column
+from utils import fetch, get_csv_column, get_s3_file
 from weather import Forecast
 
 
 def endpoint(event, context):
-    # connect to s3
-    s3 = boto3.resource('s3')
-    bucket = s3.Bucket('primelocations')
-    stream = bucket.Object('locations.csv').get()["Body"]
-    csv_file = codecs.getreader("utf-8")(stream)
+    # get file from s3
+    csv_file = get_s3_file('primelocations', 'locations.csv')
 
     # get locations from csv
     locations = get_csv_column(csv_file, 'Location')
@@ -42,8 +38,6 @@ def endpoint(event, context):
                 weathers.append(fetch(session, query_weather))
             weather_data = await asyncio.gather(*weathers)
 
-
-
             # create json object from weather data
             results = {}
             for location, city in zip(locations, weather_data):
@@ -63,7 +57,6 @@ def endpoint(event, context):
     task = asyncio.ensure_future(gather(future))
     body = loop.run_until_complete(task)
     loop.close()
-
 
     response = {
         "statusCode": 200,
