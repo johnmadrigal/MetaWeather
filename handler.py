@@ -29,7 +29,7 @@ def endpoint(event, context):
             fetch_locations = [fetch(session, url) for url in location_queries]
             location_data = await asyncio.gather(*fetch_locations)
 
-            # get weather data based of woeids
+            # get weather data based on woeids
             weather_queries = []
             for row in location_data:
                 woeid = str(row[0]['woeid'])
